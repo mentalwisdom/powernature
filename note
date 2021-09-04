@@ -1,0 +1,174 @@
+
+
+
+JWT web API
+1. Install JWT Lib in your project
+$  dotnet add package Microsoft.AspNetCore.Authentication.JwtBearer --version 5.0.9
+
+2. Add JWT token,issuer, and secret key in appsettings.json
+"JWT": {  
+    "Audience": "PowerNature",  
+    "Issuer": "PowerNature",  
+    "Secret": "ByYM000OLlMQG6VVVp1OH7Xzyr7gHuw1qvUC5dcGt3SNM"  
+  }  
+
+3. In Startup.cs, add the following code block below service.AddIdentity
+
+
+            services.AddAuthentication()
+                .AddCookie(cfg => cfg.SlidingExpiration = true) //web authen here
+                // Adding Jwt Bearer  here
+                .AddJwtBearer(options =>  
+                {  
+                    options.SaveToken = true;  
+                    options.RequireHttpsMetadata = false;  
+                    options.TokenValidationParameters = new TokenValidationParameters()  
+                    {  
+                        ValidateIssuer = true,  
+                        ValidateAudience = true,  
+                        ValidAudience = Configuration["JWT:Audience"],  
+                        ValidIssuer = Configuration["JWT:Issuer"],  
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["JWT:Secret"]))  
+                    };  
+                });          
+
+
+4. Create a new Account Controller class with the following code below
+ 
+ using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using nature.Data;
+using System.Linq;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
+using System;
+using System.Collections.Generic;
+using System.Security.Claims;
+using System.IdentityModel.Tokens.Jwt;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.Http;
+
+namespace nature{
+
+    [Route("api/[controller]/[action]")]
+    public class AccountController:Controller{
+        public IConfiguration _configuration;
+        private UserManager<AppUser> _userManager;
+        private RoleManager<AppRole> _roleManager;
+        private readonly natureDbContext _db;
+        public AccountController(
+            IConfiguration configuration,
+            natureDbContext db,
+            UserManager<AppUser> userManager,
+            RoleManager<AppRole> roleManager
+            ){
+            _db = db;
+            _configuration = configuration;
+            _userManager = userManager;
+            _roleManager = roleManager;
+        }//ef
+
+        [HttpPost]
+        public async Task<IActionResult> Login([FromBody] UserData model){
+            //validate nulltiy
+            if(model != null  && model.userName !=null & model.password !=null ){
+                return await authenticate(model);
+                 
+            }//end if
+            else{
+                //400 code
+                return BadRequest();
+            }
+        }//ef
+     
+
+        private async Task<IActionResult> authenticate(UserData model){
+              var user = await _userManager.FindByNameAsync(model.userName);  
+              
+            if (user != null && await _userManager.CheckPasswordAsync(user, model.password))  
+            {  
+                var userRoles = await _userManager.GetRolesAsync(user);  
+   
+                var authClaims = new List<Claim>  
+                {  
+                    new Claim(ClaimTypes.Name, user.UserName),  
+                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),  
+                };  
+  
+                foreach (var userRole in userRoles)  
+                {  
+                    authClaims.Add(new Claim(ClaimTypes.Role, userRole));  
+                }  
+  
+                var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));  
+  
+                var token = new JwtSecurityToken(  
+                    issuer: _configuration["JWT:Issuer"],  
+                    audience: _configuration["JWT:Audience"],  
+                    expires: DateTime.Now.AddHours(1),  
+                    claims: authClaims,  
+                    signingCredentials: 
+                    new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)  
+                    );  
+  
+                return Ok(new  
+                {  
+                    roles = userRoles,
+                    token = new JwtSecurityTokenHandler().WriteToken(token),  
+                    expiration = token.ValidTo  
+                });  
+            }
+            
+             return Unauthorized(); 
+        }//ef
+
+        [HttpPost]  
+        public async Task<IActionResult> Register([FromBody] RegisterData model)  
+        {  
+            var userExists = await _userManager.FindByNameAsync(model.userName);  
+            if (userExists != null)  
+                return StatusCode(StatusCodes.Status500InternalServerError, 
+                new  { Status = "Error", Message = "User already exists!" });  
+  
+            AppUser user = new AppUser()  
+            {  
+                Email = model.email,  
+                SecurityStamp = Guid.NewGuid().ToString(),  
+                UserName = model.userName  
+            };  
+            var result = await _userManager.CreateAsync(user, model.password);  
+            if (!result.Succeeded)  
+                return StatusCode(StatusCodes.Status500InternalServerError, 
+                new { Status = "Error", Message = "User creation failed! Please check user details and try again." });  
+  
+            return Ok(new  { Status = "Success", Message = "User created successfully!" });  
+        }//ef
+        
+    }//ec
+}//en
+
+5. Create a new Data Controller class with authentication
+
+
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+
+namespace nature {
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [Route("api/[controller]/[action]")]
+    public class ApiController: Controller{
+            [HttpGet]
+            public IActionResult Data(){
+                return Json(new string[]{"a","b","c"});
+            }
+    }//ef
+}//en
+
+6. Use swagger to test your login to get your token
+
+7. Use the following URL to test your api service
+
+
+curl -X GET "https://localhost:1975/api/Api/Data" -H  "accept: */*"  -H "Authorization: Bearer yyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoidXNlcjFAbG9jYWxob3N0LmNvbSIsImp0aSI6ImNlNGUxZGFiLTAwNmUtNGVhYi1iNTEyLTk5NmFmNGU0NTM1YSIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6InVzZXIiLCJleHAiOjE2MzAzMDA2NTksImlzcyI6IlBvd2VyTmF0dXJlIiwiYXVkIjoiUG93ZXJOYXR1cmUifQ.bM5l7MVeJxJLVzWzvKJcCINEXFKlTxTZV3hLzWy7eBs"

@@ -1,0 +1,91 @@
+<nav aria-label='breadcrumb'>
+    <ol class='breadcrumb breadcrumb-arrow'>
+        <li class='breadcrumb-item'><a href='/course/index'>course</a></li>
+        <li class='breadcrumb-item active' aria-current='page'>create</li>
+    </ol>
+</nav>
+<div id='app1' v-cloak>
+
+    <v-app>
+         
+        <v-card>
+          <v-card-title>
+          </v-card-title>
+          <v-card-text>
+            <div style="margin:20px"><v-text-field  v-model="course.courseName" label="course" ></v-text-field></div>
+
+<div style="margin:20px"><v-text-field  v-model="course.fee" label="fee" ></v-text-field></div>
+
+<div style="margin:20px"><v-text-field  v-model="course.discount" label="discount" ></v-text-field></div>
+
+ <v-date-picker
+      v-model="course.createdDate"
+      class="mt-4"
+      
+      
+></v-date-picker>
+
+
+          </v-card-text>
+          <v-card-actions>
+             <v-btn @@click='add_course' color='blue' outlined>
+                <v-icon>
+                    mdi-content-save-edit
+                </v-icon>
+             </v-btn>
+          </v-card-actions>
+          
+        </v-card>
+    </v-app>
+</div>
+@section scripts{
+    <script>
+        var app;
+            var component = {
+                vuetify: new Vuetify(theme())
+                ,
+                el:'#app1'
+                ,
+                data:{
+                    course:{}
+                    ,
+                    
+                }//edata
+                ,
+                created(){
+                     
+                }//ecreated
+                ,
+                methods:{
+                  add_course(){
+                   
+                    var url = '/course/add';
+                    var param= this.course;
+                    $.post(url,param)
+                    .done(res =>{
+              			  //console.log(res);return;
+                          if(res.error == -1){
+                               window.location = '/course/index';
+                          }
+                          else{
+                             alert(res.exception);
+                          }
+                    });
+					
+                    
+                  }//ef
+                  ,
+                  
+
+                }//emethod
+                ,
+                 computed:{
+
+                 }//ecomputed
+            };
+            app = new Vue(component);
+
+
+    </script>
+
+}

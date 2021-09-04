@@ -1,0 +1,82 @@
+<nav aria-label='breadcrumb'>
+    <ol class='breadcrumb breadcrumb-arrow'>
+        <li class='breadcrumb-item'><a href='/customer/index'>customer</a></li>
+        <li class='breadcrumb-item active' aria-current='page'>edit</li>
+    </ol>
+</nav>
+<div id='app1' v-cloak>
+
+    <v-app>
+         
+        <v-card>
+          <v-card-title>
+          </v-card-title>
+          <v-card-text>
+            <div style="margin:20px"><v-text-field  v-model="customer.firstName" label="firstName" ></v-text-field></div>
+
+<div style="margin:20px"><v-text-field  v-model="customer.lastName" label="lastName" ></v-text-field></div>
+
+
+          </v-card-text>
+          <v-card-actions>
+             <v-btn @@click='edit_customer' color='blue' outlined>
+                <v-icon>
+                    mdi-content-save-edit
+                </v-icon>
+             </v-btn>
+          </v-card-actions>
+          
+        </v-card>
+    </v-app>
+</div>
+@section scripts{
+    <script>
+        var app;
+            var component = {
+                vuetify: new Vuetify(theme())
+                ,
+                el:'#app1'
+                ,
+                data:{
+                    customer:{}
+                    ,
+                    
+                }//edata
+                ,
+                created(){
+                  this.customer = @Html.Raw(Json.Serialize(@ViewBag.customer));
+                     
+                     
+                }//ecreated
+                ,
+                methods:{
+                  edit_customer(){
+                   
+                    var url = '/customer/edit';
+                    var param= this.customer;
+                    $.post(url,param)
+                    .done(res =>{
+                          if(res.error == -1){
+                               window.location = '/customer/index';
+                          }
+                          else{
+                             alert(res.exception);
+                          }
+                    });
+                    
+                  }//ef
+                  ,                 
+                  
+
+                }//emethod
+                ,
+                 computed:{
+
+                 }//ecomputed
+            };
+            app = new Vue(component);
+
+
+    </script>
+
+}

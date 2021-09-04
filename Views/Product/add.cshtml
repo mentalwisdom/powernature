@@ -1,0 +1,126 @@
+<nav aria-label='breadcrumb'>
+    <ol class='breadcrumb breadcrumb-arrow'>
+        <li class='breadcrumb-item'><a href='/product/index'>product</a></li>
+        <li class='breadcrumb-item active' aria-current='page'>create</li>
+    </ol>
+</nav>
+<div id='app1' v-cloak>
+
+    <v-app>
+         
+        <v-card>
+          <v-card-title>
+          </v-card-title>
+          <v-card-text>
+            <div style="margin:20px"><v-text-field  v-model="product.name" label="name" ></v-text-field></div>
+
+<div style="margin:20px"><v-text-field  v-model="product.qty" label="qty" ></v-text-field></div>
+
+<div style="margin:20px"><v-text-field  v-model="product.price" label="price" ></v-text-field></div>
+
+<div style="margin:20px">
+<v-select return-object
+		  outlined
+          v-model="select_productGroup"
+          :items="productGroups"
+          item-text='value'
+          menu-props="auto"
+          label="product group"
+          show="productGroupName" 
+           
+  ></v-select>
+</div>
+
+
+<v-img :src="imageData" width="150" height="150" label="picture" ></v-img>
+<v-file-input v-model="image" @@change="preview" file hide dir="products"  ></v-file-input>
+
+
+          </v-card-text>
+          <v-card-actions>
+             <v-btn @@click='add_product' color='blue' outlined>
+                <v-icon>
+                    mdi-content-save-edit
+                </v-icon>
+             </v-btn>
+          </v-card-actions>
+          
+        </v-card>
+    </v-app>
+</div>
+@section scripts{
+    <script>
+        var app;
+            var component = {
+                vuetify: new Vuetify(theme())
+                ,
+                el:'#app1'
+                ,
+                data:{
+                    product:{}
+                    ,
+                    productGroups:[] ,
+select_productGroup:{},
+imageData:'',
+				image:[],
+
+
+                }//edata
+                ,
+                created(){
+                     
+//=== begin productGroup ===
+this.productGroups = @Html.Raw(Json.Serialize(@ViewBag.productGroups));
+this.select_productGroup = this.productGroups[0];
+//=== begin productGroup ===
+
+
+                }//ecreated
+                ,
+                methods:{
+                  add_product(){
+                   									this.product.productGroupId = this.select_productGroup.productGroupId;
+
+this.product.image = this.imageData;
+
+                    var url = '/product/add';
+                    var param= this.product;
+                    $.post(url,param)
+                    .done(res =>{
+              			  //console.log(res);return;
+                          if(res.error == -1){
+                               window.location = '/product/index';
+                          }
+                          else{
+                             alert(res.exception);
+                          }
+                    });
+					
+                    
+                  }//ef
+                  ,
+                  preview(){
+ 						const reader = new FileReader();
+                		reader.readAsDataURL(this.image); //file1
+                		reader.onload = () => {
+                			this.imageData = reader.result; //imageData
+                		}//ev
+                		reader.onerror = function (error) {
+                			console.log('Error: ', error)
+                		}//ev
+
+                  }//ef               
+
+
+                }//emethod
+                ,
+                 computed:{
+
+                 }//ecomputed
+            };
+            app = new Vue(component);
+
+
+    </script>
+
+}

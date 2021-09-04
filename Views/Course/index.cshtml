@@ -1,0 +1,99 @@
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb breadcrumb-arrow">
+        <li class="breadcrumb-item active" aria-current="page">course</li>
+    </ol>
+</nav>
+<div id='app1' v-cloak>
+
+    <v-app>
+        <v-main>
+             <v-btn
+              @@click='add_course'
+             >
+                 <v-icon>
+                   mdi-plus
+                 </v-icon>
+                 
+             </v-btn>
+			<v-text-field
+                    v-model="search"
+                    append-icon="mdi-magnify"
+                    label="Search"
+                    single-line
+                    hide-details
+                ></v-text-field>
+             <v-data-table
+			 :search = 'search'
+             :headers ='headers'
+             :items   ='courses'
+             :footer-props="{ 'items-per-page-options': [25, 50,100] }"
+             :items-per-page="25"
+              class='elevation-1'
+             />
+                  <template v-slot:item.actions='{item}'>
+                        <v-btn 
+                        class="white--text"
+                        color="blue darken-1"
+                        @@click="edit_course(item)"
+                        >
+                            <v-icon>
+                            mdi-pencil
+                            </v-icon>
+                            
+                        </v-btn>
+                </template>
+             </v-data-table>
+        </v-main>
+    </v-app>
+</div>
+@section scripts{
+    <script>
+        var app;
+            var component = {
+                vuetify: new Vuetify(theme())
+                ,
+                el:'#app1'
+                ,
+                data:{
+                   search :'',
+                   courses:[]
+                   ,
+                   headers:[
+                      {text:'no',value:'courseId',align:'left',sortable:true},
+                      {text:'course',value:'courseName',align:'left',sortable:true},
+                      {text:'fee',value:'fee',align:'left',sortable:true},
+                      {text:'discount',value:'discount',align:'left',sortable:true},
+                      {text:'createdDate',value:'createdDate',align:'left',sortable:true},
+                      {text:'actions',value:'actions',align:'left',sortable:true}
+
+					]
+                }//edata
+                ,
+                created(){
+                  this.courses = @Html.Raw(Json.Serialize(@ViewBag.courses));
+                }//ecreated
+                ,
+                methods:{
+                    add_course(){
+                        window.location= '/course/add';
+                  
+                        
+                    }//ef
+                    
+                    ,
+                    edit_course(item){
+                        window.location = '/course/edit/'+item.courseId;
+                    }
+
+                }//emethods
+                ,
+                computed:{
+
+                }//ecomputed
+            };
+            app = new Vue(component);
+
+
+    </script>
+
+}

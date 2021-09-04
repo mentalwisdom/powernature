@@ -1,0 +1,97 @@
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb breadcrumb-arrow">
+        <li class="breadcrumb-item active" aria-current="page">customer</li>
+    </ol>
+</nav>
+<div id='app1' v-cloak>
+
+    <v-app>
+        <v-main>
+             <v-btn
+              @@click='add_customer'
+             >
+                 <v-icon>
+                   mdi-plus
+                 </v-icon>
+                 
+             </v-btn>
+			<v-text-field
+                    v-model="search"
+                    append-icon="mdi-magnify"
+                    label="Search"
+                    single-line
+                    hide-details
+                ></v-text-field>
+             <v-data-table
+			 :search = 'search'
+             :headers ='headers'
+             :items   ='customers'
+             :footer-props="{ 'items-per-page-options': [25, 50,100] }"
+             :items-per-page="25"
+              class='elevation-1'
+             />
+                  <template v-slot:item.actions='{item}'>
+                        <v-btn 
+                        class="white--text"
+                        color="blue darken-1"
+                        @@click="edit_customer(item)"
+                        >
+                            <v-icon>
+                            mdi-pencil
+                            </v-icon>
+                            
+                        </v-btn>
+                </template>
+             </v-data-table>
+        </v-main>
+    </v-app>
+</div>
+@section scripts{
+    <script>
+        var app;
+            var component = {
+                vuetify: new Vuetify(theme())
+                ,
+                el:'#app1'
+                ,
+                data:{
+                   search :'',
+                   customers:[]
+                   ,
+                   headers:[
+                      {text:'customerId',value:'customerId',align:'left',sortable:true},
+                      {text:'firstName',value:'firstName',align:'left',sortable:true},
+                      {text:'lastName',value:'lastName',align:'left',sortable:true},
+                      {text:'actions',value:'actions',align:'left',sortable:true}
+
+					]
+                }//edata
+                ,
+                created(){
+                  this.customers = @Html.Raw(Json.Serialize(@ViewBag.customers));
+                }//ecreated
+                ,
+                methods:{
+                    add_customer(){
+                        window.location= '/customer/add';
+                  
+                        
+                    }//ef
+                    
+                    ,
+                    edit_customer(item){
+                        window.location = '/customer/edit/'+item.customerId;
+                    }
+
+                }//emethods
+                ,
+                computed:{
+
+                }//ecomputed
+            };
+            app = new Vue(component);
+
+
+    </script>
+
+}

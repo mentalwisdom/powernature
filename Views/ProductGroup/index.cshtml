@@ -1,0 +1,96 @@
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb breadcrumb-arrow">
+        <li class="breadcrumb-item active" aria-current="page">productGroup</li>
+    </ol>
+</nav>
+<div id='app1' v-cloak>
+
+    <v-app>
+        <v-main>
+             <v-btn
+              @@click='add_productgroup'
+             >
+                 <v-icon>
+                   mdi-plus
+                 </v-icon>
+                 
+             </v-btn>
+			<v-text-field
+                    v-model="search"
+                    append-icon="mdi-magnify"
+                    label="Search"
+                    single-line
+                    hide-details
+                ></v-text-field>
+             <v-data-table
+			 :search = 'search'
+             :headers ='headers'
+             :items   ='productGroups'
+             :footer-props="{ 'items-per-page-options': [25, 50,100] }"
+             :items-per-page="25"
+              class='elevation-1'
+             />
+                  <template v-slot:item.actions='{item}'>
+                        <v-btn 
+                        class="white--text"
+                        color="blue darken-1"
+                        @@click="edit_productgroup(item)"
+                        >
+                            <v-icon>
+                            mdi-pencil
+                            </v-icon>
+                            
+                        </v-btn>
+                </template>
+             </v-data-table>
+        </v-main>
+    </v-app>
+</div>
+@section scripts{
+    <script>
+        var app;
+            var component = {
+                vuetify: new Vuetify(theme())
+                ,
+                el:'#app1'
+                ,
+                data:{
+                   search :'',
+                   productGroups:[]
+                   ,
+                   headers:[
+                      {text:'no',value:'productGroupId',align:'left',sortable:true},
+                      {text:'productgroup',value:'productGroupName',align:'left',sortable:true},
+                      {text:'actions',value:'actions',align:'left',sortable:true}
+
+					]
+                }//edata
+                ,
+                created(){
+                  this.productGroups = @Html.Raw(Json.Serialize(@ViewBag.productGroups));
+                }//ecreated
+                ,
+                methods:{
+                    add_productgroup(){
+                        window.location= '/productgroup/add';
+                  
+                        
+                    }//ef
+                    
+                    ,
+                    edit_productgroup(item){
+                        window.location = '/productgroup/edit/'+item.productGroupId;
+                    }
+
+                }//emethods
+                ,
+                computed:{
+
+                }//ecomputed
+            };
+            app = new Vue(component);
+
+
+    </script>
+
+}

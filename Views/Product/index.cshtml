@@ -1,0 +1,102 @@
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb breadcrumb-arrow">
+        <li class="breadcrumb-item active" aria-current="page">product</li>
+    </ol>
+</nav>
+<div id='app1' v-cloak>
+
+    <v-app>
+        <v-main>
+             <v-btn
+              @@click='add_product'
+             >
+                 <v-icon>
+                   mdi-plus
+                 </v-icon>
+                 
+             </v-btn>
+			<v-text-field
+                    v-model="search"
+                    append-icon="mdi-magnify"
+                    label="Search"
+                    single-line
+                    hide-details
+                ></v-text-field>
+             <v-data-table
+			 :search = 'search'
+             :headers ='headers'
+             :items   ='products'
+             :footer-props="{ 'items-per-page-options': [25, 50,100] }"
+             :items-per-page="25"
+              class='elevation-1'
+             />
+                  <template v-slot:item.actions='{item}'>
+                        <v-btn 
+                        class="white--text"
+                        color="blue darken-1"
+                        @@click="edit_product(item)"
+                        >
+                            <v-icon>
+                            mdi-pencil
+                            </v-icon>
+                            
+                        </v-btn>
+                </template>
+             </v-data-table>
+        </v-main>
+    </v-app>
+</div>
+@section scripts{
+    <script>
+        var app;
+            var component = {
+                vuetify: new Vuetify(theme())
+                ,
+                el:'#app1'
+                ,
+                data:{
+                   search :'',
+                   products:[]
+                   ,
+                   headers:[
+                      {text:'productId',value:'productId',align:'left',sortable:true},
+                      {text:'name',value:'name',align:'left',sortable:true},
+                      {text:'qty',value:'qty',align:'left',sortable:true},
+                      {text:'price',value:'price',align:'left',sortable:true},
+                      {text:'product group',value:'productGroup',align:'left',sortable:true},
+
+
+                      {text:'actions',value:'actions',align:'left',sortable:true}
+
+					]
+                }//edata
+                ,
+                created(){
+                  this.products = @Html.Raw(Json.Serialize(@ViewBag.products));
+                    console.log(this.products);
+                }//ecreated
+                ,
+                methods:{
+                    add_product(){
+                        window.location= '/product/add';
+                  
+                        
+                    }//ef
+                    
+                    ,
+                    edit_product(item){
+                        window.location = '/product/edit/'+item.productId;
+                    }
+
+                }//emethods
+                ,
+                computed:{
+
+                }//ecomputed
+            };
+            app = new Vue(component);
+
+
+    </script>
+
+}
