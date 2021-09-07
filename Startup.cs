@@ -37,9 +37,22 @@ namespace nature
         {
             services.AddCors(o => o.AddPolicy("p1", builder =>
        {
-           builder.AllowAnyOrigin()
-                  .AllowAnyMethod()
-                  .AllowAnyHeader();
+           builder
+
+                   .AllowAnyOrigin()
+                    .AllowAnyMethod()
+                   .AllowAnyHeader()
+                //        .WithOrigins("http://localhost",
+                  //      "https://localhost:1975",
+                    //    "http://localhost:1974",
+                      //  "https://localhost"
+                        //) //Or my flutter web host
+                        .AllowAnyMethod()
+                        .AllowAnyHeader()
+                        .SetIsOriginAllowed((host) => true)
+
+                 
+                  ;
        }));
             // services.Configure<CookiePolicyOptions>(options =>
             // {
@@ -158,19 +171,25 @@ namespace nature
                     Path.Combine(Directory.GetCurrentDirectory(), @"products")),
                 RequestPath = new PathString("/products")
             });
+            app.UseStaticFiles(new StaticFileOptions()
+            {
+                FileProvider = new PhysicalFileProvider(
+                  Path.Combine(Directory.GetCurrentDirectory(), @"coupons")),
+                RequestPath = new PathString("/coupons")
+            });
 
             app.UseRouting();
             app.UseAuthentication();
 
             app.UseAuthorization();
-       
-            
+
+
             app.UseEndpoints(endpoints =>
            {
                endpoints.MapRazorPages();//razor page mapping
-                endpoints.MapControllerRoute(
-                   name: "default",
-                   pattern: "{controller=Home}/{action=Index}/{id?}");
+               endpoints.MapControllerRoute(
+                  name: "default",
+                  pattern: "{controller=Home}/{action=Index}/{id?}");
            });
 
         }//ef
